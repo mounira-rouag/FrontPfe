@@ -1,0 +1,86 @@
+import { Component, OnInit } from '@angular/core';
+import { UserServiceService } from '../Services/user-service.service';
+import { User } from '../Models/User.model';
+import { ConfirmationService, MessageService } from 'primeng/api';
+
+@Component({
+  selector: 'app-list-users',
+  templateUrl: './list-users.component.html',
+  styleUrls: ['./list-users.component.css']
+})
+export class ListUsersComponent implements OnInit {
+  allUsers:User[] =[];
+  loading: boolean=true;
+  first = 0;
+  rows = 10;
+  selectedRoles: string[] = [];
+  siteid!: string;
+  visible: boolean = false;
+  errorMessage='';
+    showDialog() {
+        this.visible = true;
+    }
+
+    closeDialog() {
+        this.visible = false;
+    }
+
+
+  constructor(private userService: UserServiceService
+   
+    ) { }
+
+  ngOnInit(): void {
+    this.getAllUser();
+  }
+
+ 
+
+  getAllUser(){
+    this.userService.getAllUsers().subscribe(res => {
+      this.allUsers = res
+      console.log(this.allUsers,"allusers");
+      this.loading=false;
+    })
+  }
+  updateUser(userId: number, updatedUser: any): void {
+    // Call the user service to update the user
+    this.userService.updateUser(userId, updatedUser)
+      .subscribe(
+        () => {
+          // Handle success
+          console.log('User updated successfully');
+          // Optionally, you can navigate to another page or show a success message
+        },
+        (error) => {
+          // Handle error
+          console.error('Failed to update user:', error);
+          this.errorMessage = 'Failed to update user';
+        }
+      );
+  }
+
+  next() {
+    this.first = this.first + this.rows;
+}
+
+prev() {
+    this.first = this.first - this.rows;
+}
+
+reset() {
+    this.first = 0;
+}
+pageChange(event: { first: number; rows: number; }) {
+  this.first = event.first;
+  this.rows = event.rows;
+}
+
+isLastPage(): boolean {
+  return this.allUsers ? this.first === this.allUsers.length - this.rows : true;
+}
+
+isFirstPage(): boolean {
+  return this.allUsers ? this.first === 0 : true;
+}
+}
